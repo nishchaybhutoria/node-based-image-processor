@@ -1,6 +1,6 @@
 #include "imgui.h"
 #include "imnodes.h"
-#include "core/Node.h"
+#include "nodes/InputNode.h"
 
 #include "../backends/imgui_impl_glfw.h"
 #include "../backends/imgui_impl_opengl3.h"
@@ -21,12 +21,12 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "ImNodes Test", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Node-Based Image App", NULL, NULL);
     if (!window) return -1;
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(1); // Enable vsync
 
-    // Setup Dear ImGui + ImNodes
+    // Setup Dear ImGui and ImNodes
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImNodes::CreateContext();
@@ -36,12 +36,9 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // Variables for IDs
-    const int node_id_1 = 1;
-    const int node_id_2 = 2;
-    const int attr_out = 3;
-    const int attr_in = 4;
-    const int link_id = 100;
+    std::string imgPath = "../assets/test.png"; // Update if needed
+    InputNode inputNode(1, imgPath);
+    inputNode.process(); // Load and create texture
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -50,32 +47,37 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Simple Node Editor");
+        // Node Editor Window
+        ImGui::SetNextWindowPos(ImVec2(0, 0));
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+        ImGui::Begin("Node Editor", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
         ImNodes::BeginNodeEditor();
 
-        // Node 1
-        ImNodes::BeginNode(node_id_1);
-        ImNodes::BeginOutputAttribute(attr_out);
+        ImNodes::BeginNode(inputNode.id);
+        ImGui::Text("%s", inputNode.name.c_str());
+
+        GLuint tex = inputNode.getTextureID();
+        if (tex != 0 && glIsTexture(tex)) {
+            ImGui::Text("Preview:");
+            ImGui::Image(
+                (ImTextureID)(intptr_t)inputNode.getTextureID(),
+                ImVec2(128, 128),
+                ImVec2(1, 0), ImVec2(0, 1)
+            );
+        }
+
+        ImNodes::BeginOutputAttribute(inputNode.id + 100);
         ImGui::Text("Output");
         ImNodes::EndOutputAttribute();
+
         ImNodes::EndNode();
 
-        // Node 2
-        ImNodes::BeginNode(node_id_2);
-        ImNodes::BeginInputAttribute(attr_in);
-        ImGui::Text("Input");
-        ImNodes::EndInputAttribute();
-        ImNodes::EndNode();
-
-        // Link between them
-        ImNodes::Link(link_id, attr_out, attr_in);
 
         ImNodes::EndNodeEditor();
-
         ImGui::End();
 
-        // Rendering
+        // Render
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
