@@ -11,9 +11,9 @@
 #   pacman -S --noconfirm --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-glfw
 #
 
-#CXX = g++
 #CXX = clang++
 
+CXX = g++
 EXE = demo_app
 IMGUI_DIR = ../
 SOURCES = main.cpp
@@ -23,7 +23,8 @@ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 LINUX_GL_LIBS = -lGL
 
-CXXFLAGS = -std=c++11 -I$(IMGUI_DIR)/imgui -I$(IMGUI_DIR)/backends
+CXXFLAGS = -std=c++17 -Wall -I$(IMGUI_DIR)/imgui -I$(IMGUI_DIR)/backends
+LDFLAGS = 
 CXXFLAGS += -g -Wall -Wformat
 LIBS =
 
@@ -44,6 +45,8 @@ ifeq ($(UNAME_S), Linux) #LINUX
 	LIBS += $(LINUX_GL_LIBS) `pkg-config --static --libs glfw3`
 
 	CXXFLAGS += `pkg-config --cflags glfw3`
+	CXXFLAGS += `pkg-config --cflags opencv4`
+	LDFLAGS += `pkg-config --libs opencv4`
 	CFLAGS = $(CXXFLAGS)
 endif
 
@@ -64,7 +67,7 @@ all: $(EXE)
 	@echo Build complete for $(ECHO_MESSAGE)
 
 $(EXE): $(OBJS)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS) $(LIBS)
 
 clean:
 	rm -f $(EXE) $(OBJS)

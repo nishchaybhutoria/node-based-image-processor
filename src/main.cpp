@@ -1,5 +1,6 @@
 #include "imgui.h"
 #include "imnodes.h"
+#include "core/Node.h"
 
 #include "../backends/imgui_impl_glfw.h"
 #include "../backends/imgui_impl_opengl3.h"
