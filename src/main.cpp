@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imnodes.h"
 #include "nodes/InputNode.h"
+#include "nodes/OutputNode.h"
 
 #include "../backends/imgui_impl_glfw.h"
 #include "../backends/imgui_impl_opengl3.h"
@@ -40,6 +41,9 @@ int main() {
     InputNode inputNode(1, imgPath);
     inputNode.process(); // Load and create texture
 
+    OutputNode outputNode(2, "Output.png");
+    outputNode.setInput(inputNode.getOutput()); 
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -59,7 +63,6 @@ int main() {
 
         GLuint tex = inputNode.getTextureID();
         if (tex != 0 && glIsTexture(tex)) {
-            ImGui::Text("Preview:");
             ImGui::Image(
                 (ImTextureID)(intptr_t)inputNode.getTextureID(),
                 ImVec2(128, 128),
@@ -68,11 +71,30 @@ int main() {
         }
 
         ImNodes::BeginOutputAttribute(inputNode.id + 100);
+        ImGui::Text("Input");
+        ImNodes::EndOutputAttribute();
+
+        ImNodes::EndNode();
+
+        ImNodes::BeginNode(outputNode.id);
+        ImGui::Text("%s", outputNode.name.c_str());
+
+        tex = outputNode.getTextureID();
+        if (tex != 0 && glIsTexture(tex)) {
+            ImGui::Image(
+                (ImTextureID)(intptr_t)inputNode.getTextureID(),
+                ImVec2(128, 128),
+                ImVec2(0, 1), ImVec2(1, 0)
+            );
+        }
+
+        ImNodes::BeginInputAttribute(outputNode.id + 100);
         ImGui::Text("Output");
         ImNodes::EndOutputAttribute();
 
         ImNodes::EndNode();
 
+        ImNodes::Link(1, inputNode.id + 100, outputNode.id + 100);
 
         ImNodes::EndNodeEditor();
         ImGui::End();
