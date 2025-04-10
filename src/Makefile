@@ -19,7 +19,7 @@ IMGUI_DIR = ../
 SOURCES = main.cpp
 SOURCES += $(IMGUI_DIR)/imgui/imgui.cpp $(IMGUI_DIR)/imgui/imgui_demo.cpp $(IMGUI_DIR)/imgui/imgui_draw.cpp $(IMGUI_DIR)/imgui/imgui_tables.cpp $(IMGUI_DIR)/imgui/imgui_widgets.cpp $(IMGUI_DIR)/imgui/imnodes.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
-SOURCES += nodes/InputNode.cpp nodes/OutputNode.cpp
+SOURCES += nodes/InputNode.cpp nodes/OutputNode.cpp nodes/BrightnessContrastNode.cpp
 OBJS = $(SOURCES:.cpp=.o)
 UNAME_S := $(shell uname -s)
 LINUX_GL_LIBS = -lGL

@@ -2,6 +2,7 @@
 #include "imnodes.h"
 #include "nodes/InputNode.h"
 #include "nodes/OutputNode.h"
+#include "nodes/BrightnessContrastNode.h"
 
 #include "../backends/imgui_impl_glfw.h"
 #include "../backends/imgui_impl_opengl3.h"
@@ -41,8 +42,10 @@ int main() {
     InputNode inputNode(1, imgPath);
     inputNode.process(); // Load and create texture
 
-    OutputNode outputNode(2, "Output.png");
-    outputNode.setInput(inputNode.getOutput()); 
+    BrightnessContrastNode outputNode(2);
+    OutputNode finalNode(3);
+    outputNode.setInput(inputNode.getOutput());
+    outputNode.process();
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -58,45 +61,52 @@ int main() {
 
         ImNodes::BeginNodeEditor();
 
+        // Input Node
         ImNodes::BeginNode(inputNode.id);
         ImGui::Text("%s", inputNode.name.c_str());
 
         GLuint tex = inputNode.getTextureID();
         if (tex != 0 && glIsTexture(tex)) {
-            ImGui::Image(
-                (ImTextureID)(intptr_t)inputNode.getTextureID(),
-                ImVec2(128, 128),
-                ImVec2(1, 0), ImVec2(0, 1)
-            );
+            ImGui::Image((ImTextureID)(intptr_t)tex, ImVec2(128, 128), ImVec2(1, 0), ImVec2(0, 1));
         }
 
         ImNodes::BeginOutputAttribute(inputNode.id + 100);
         ImGui::Text("Input");
         ImNodes::EndOutputAttribute();
-
         ImNodes::EndNode();
 
+        // Brightness/Contrast Node
         ImNodes::BeginNode(outputNode.id);
         ImGui::Text("%s", outputNode.name.c_str());
-
-        tex = outputNode.getTextureID();
-        if (tex != 0 && glIsTexture(tex)) {
-            ImGui::Image(
-                (ImTextureID)(intptr_t)inputNode.getTextureID(),
-                ImVec2(128, 128),
-                ImVec2(0, 1), ImVec2(1, 0)
-            );
-        }
+        outputNode.preview();
 
         ImNodes::BeginInputAttribute(outputNode.id + 100);
         ImGui::Text("Output");
+        ImNodes::EndInputAttribute();
+        ImNodes::BeginOutputAttribute(outputNode.id + 200);
+        ImGui::Text("To Final");
         ImNodes::EndOutputAttribute();
-
         ImNodes::EndNode();
 
-        ImNodes::Link(1, inputNode.id + 100, outputNode.id + 100);
+        // Final Output Node
+        finalNode.setInput(outputNode.getOutput());
+        finalNode.process();
+
+        ImNodes::BeginNode(finalNode.id);
+        ImGui::Text("%s", finalNode.name.c_str());
+        finalNode.preview();
+
+        ImNodes::BeginInputAttribute(finalNode.id + 100);
+        ImGui::Text("Final");
+        ImNodes::EndInputAttribute();
+        ImNodes::EndNode();
+
+        // Links
+        ImNodes::Link(1, inputNode.id + 100, outputNode.id + 100); 
+        ImNodes::Link(2, outputNode.id + 200, finalNode.id + 100);
 
         ImNodes::EndNodeEditor();
+
         ImGui::End();
 
         // Render

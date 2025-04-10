@@ -3,13 +3,16 @@
 #include "../core/Node.h"
 #include <GL/gl.h>
 
-class OutputNode : public Node {
+class BrightnessContrastNode : public Node {
 private:
-    cv::Mat image;
+    cv::Mat inputImage, outputImage;
     GLuint textureID = 0;
 
+    float brightness = -100;
+    float contrast = 100;
+
 public:
-    OutputNode(int id, const std::string& name = "Output");
+    BrightnessContrastNode(int id, const std::string& name = "Brightness/Contrast");
 
     void setInput(const cv::Mat& input);
     void process() override;
@@ -18,7 +21,7 @@ public:
     GLuint getTextureID() const { return textureID; }
     void preview() override;
 
-    ~OutputNode() override {
+    ~BrightnessContrastNode() override {
         if (textureID) glDeleteTextures(1, &textureID);
     }
 };
