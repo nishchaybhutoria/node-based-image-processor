@@ -13,16 +13,16 @@ void BrightnessContrastNode::process() {
     }
     outputImage = inputImage.clone();
     outputImage.convertTo(outputImage, -1, contrast, brightness);
-
-    if (textureID) glDeleteTextures(1, &textureID); // cleanup old
-    textureID = matToTexture(outputImage);
 }
 
 void BrightnessContrastNode::preview() {
     if (inputImage.empty()) {
         ImGui::Text("No input");
         return;
-    }   
+    }
+
+    if (textureID) glDeleteTextures(1, &textureID); // cleanup old
+    textureID = matToTexture(outputImage);
     
     if (textureID && glIsTexture(textureID)) {
         ImGui::Text("Preview:");

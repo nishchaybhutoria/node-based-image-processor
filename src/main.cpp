@@ -25,7 +25,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    bool fullscreen = false;
+    bool fullscreen = true;
 
     GLFWmonitor* primary = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(primary);
@@ -140,7 +140,7 @@ int main() {
             ImNodes::GetSelectedNodes(&selectedNodeId);
             if (selectedNodeId != -1 && nodes.find(selectedNodeId) != nodes.end()) {
                 // std::cout << "Rendering UI for node " << selectedNodeId << '\n';
-                // nodes[selectedNodeId]->renderPropertiesUI();
+                nodes[selectedNodeId]->renderPropertiesUI();
             }
             ImGui::Text("Node %d is selected.", selectedNodeId);
         } else {
