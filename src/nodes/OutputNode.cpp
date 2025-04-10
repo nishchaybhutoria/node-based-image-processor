@@ -39,6 +39,17 @@ void OutputNode::preview() {
     }
 }
 
+void OutputNode::renderPropertiesUI() {
+    ImGui::Text("Output");
+
+    if (image.empty()) {
+        ImGui::Text("No image yet.");
+        return;
+    } else {
+        ImGui::Text("Image exists.");
+    }
+}
+
 cv::Mat OutputNode::getOutput() const {
     return image;
 }

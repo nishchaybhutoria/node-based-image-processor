@@ -15,7 +15,7 @@ public:
 
     void process() override;
     cv::Mat getOutput() const override;
-
+    void renderPropertiesUI() override;
     GLuint getTextureID() const { return textureID; }
 
     ~InputNode() override {

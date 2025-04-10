@@ -12,6 +12,7 @@ public:
     virtual void process() = 0;
     virtual cv::Mat getOutput() const = 0;
     virtual void preview() {}
+    virtual void renderPropertiesUI() {}
 
     virtual ~Node() = default;
 };
