@@ -4,21 +4,29 @@
 #include "../utils/TextureUtils.h"
 #include "imgui.h"
 
-InputNode::InputNode(int id, const std::string& path, const std::string& name) : Node(id, name.empty() ? std::filesystem::path(path).filename().string() : name), filepath(path) {}
+InputNode::InputNode(int id, const std::string& defaultPath, const std::string& name)
+    : Node(id, name), filepath(defaultPath) {
+    if (!filepath.empty()) {
+        process();
+    }
+}
 
 void InputNode::process() {
+    if (filepath.empty()) return;
+
     image = cv::imread(filepath);
     if (image.empty()) {
         std::cerr << "Failed to load image: " << filepath << std::endl;
+        return;
     }
 
-    if (textureID) glDeleteTextures(1, &textureID); // cleanup old
+    if (textureID) glDeleteTextures(1, &textureID);
     textureID = matToTexture(image);
 }
 
 void InputNode::preview() {
     if (image.empty()) {
-        ImGui::Text("No input");
+        ImGui::Text("No preview");
         return;
     }
 
@@ -33,13 +41,32 @@ void InputNode::preview() {
 }
 
 void InputNode::renderPropertiesUI() {
-    ImGui::Text("Input");
+    ImGui::Text("Image Input");
 
-    if (image.empty()) {
-        ImGui::Text("No input image yet.");
-        return;
+    static char buf[256];
+    strncpy(buf, filepath.c_str(), sizeof(buf));
+
+    if (ImGui::InputText("Filepath", buf, IM_ARRAYSIZE(buf))) {
+        filepath = std::string(buf);
+    }
+    if (ImGui::Button("Load")) {
+        process();
+    }
+
+    if (!image.empty()) {
+        ImGui::Separator();
+        ImGui::Text("Metadata:");
+        ImGui::Text("Dimensions: %d x %d", image.cols, image.rows);
+        ImGui::Text("Channels: %d", image.channels());
+
+        try {
+            auto fsize = std::filesystem::file_size(filepath);
+            ImGui::Text("File size: %.2f KB", fsize / 1024.0f);
+        } catch (...) {
+            ImGui::Text("File size: Unknown");
+        }
     } else {
-        ImGui::Text("Input exists.");
+        ImGui::Text("No image loaded.");
     }
 }
 

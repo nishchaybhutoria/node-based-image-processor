@@ -43,7 +43,7 @@ int main() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImNodes::CreateContext();
-
+    // ImNodes::EnableLinkDetachmentWithModifier(ImGuiMod_Alt);
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.Fonts->AddFontFromFileTTF("../assets/Inter_18pt-Regular.ttf", 16.0f);
     ImGui::StyleColorsDark();
@@ -53,7 +53,7 @@ int main() {
 
     Graph graph;
 
-    auto inputNode = std::make_shared<InputNode>(0, "../assets/test.png");
+    auto inputNode = std::make_shared<InputNode>(0);
     int inputId = graph.addNode(inputNode);
 
     auto bcNode = std::make_shared<BrightnessContrastNode>(0);
@@ -122,6 +122,19 @@ int main() {
 
         ImNodes::EndNodeEditor();
 
+        int hoveredLinkId;
+        if (ImNodes::IsLinkHovered(&hoveredLinkId)) {
+
+            ImGui::BeginTooltip();
+            ImGui::Text("ALT + Click to delete link");
+            ImGui::EndTooltip();
+
+
+            if (ImGui::IsKeyDown(ImGuiKey_LeftAlt) && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                graph.removeLink(hoveredLinkId);
+            }
+        }
+
         int start_attr, end_attr;
         if (ImNodes::IsLinkCreated(&start_attr, &end_attr)) {
             int fromAttr = start_attr, toAttr = end_attr;
@@ -130,21 +143,21 @@ int main() {
             int fromNode = fromAttr / 1000;
             int toNode = toAttr / 1000;
 
-            bool add_link = true;
+            bool addLink = true;
 
             if (fromNode == toNode) {
                 std::cerr << "Self-links are not allowed\n";
-                add_link = false;
+                addLink = false;
             }
             
             for (const auto& link : graph.links) {
                 if (link.fromAttr == fromAttr && link.toAttr == toAttr) {
                     std::cerr << "Duplicate link ignored\n";
-                    add_link = false;
+                    addLink = false;
                 }
             }
             
-            int inputCount = 0;
+            int inputCount = 0; // assumes input is <= 1, change for blend node
             for (const auto& link : graph.getInputLinks(toNode)) {
                 if (link.toAttr == toAttr) {
                     ++inputCount;
@@ -152,17 +165,17 @@ int main() {
             }
             if (inputCount > 0) {
                 std::cerr << "Only one input allowed for this node\n";
-                add_link = false;
+                addLink = false;
             }
             
-            if (add_link) {
+            if (addLink) {
                 graph.addLink(fromNode, fromAttr % 1000, toNode, toAttr % 1000);
             }
         }
 
-        int deleted_link_id;
-        if (ImNodes::IsLinkDestroyed(&deleted_link_id)) {
-            graph.removeLink(deleted_link_id);
+        int deletedLinkId;
+        if (ImNodes::IsLinkDestroyed(&deletedLinkId)) {
+            graph.removeLink(deletedLinkId);
         }
 
         ImGui::End();

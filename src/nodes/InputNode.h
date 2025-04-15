@@ -11,7 +11,7 @@ private:
     GLuint textureID = 0;
 
 public:
-    InputNode(int id, const std::string& path, const std::string& name = "");
+    InputNode(int id, const std::string& defaultPath = "", const std::string& name = "Input");
 
     void process() override;
     cv::Mat getOutput() const override;

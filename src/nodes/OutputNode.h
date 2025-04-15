@@ -7,6 +7,9 @@ class OutputNode : public Node {
 private:
     cv::Mat image;
     GLuint textureID = 0;
+    std::string filename = "output";
+    std::string format = "JPG";
+    int jpgQuality = 95;
 
 public:
     OutputNode(int id, const std::string& name = "Output");
@@ -16,6 +19,7 @@ public:
     cv::Mat getOutput() const override;
     GLuint getTextureID() const { return textureID; }
     void preview() override;
+    void saveImage();
     void renderPropertiesUI() override;
 
     ~OutputNode() override {

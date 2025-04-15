@@ -44,12 +44,60 @@ void OutputNode::preview() {
     }
 }
 
+void OutputNode::saveImage() {
+    if (image.empty()) {
+        std::cerr << "Cannot save: no image available\n";
+        return;
+    }
+
+    std::vector<int> params;
+    std::string fullFilename = filename;
+
+    if (format == "JPG") {
+        params.push_back(cv::IMWRITE_JPEG_QUALITY);
+        params.push_back(jpgQuality);
+        if (filename.find(".jpg") == std::string::npos) fullFilename += ".jpg";
+    } else if (format == "PNG") {
+        if (filename.find(".png") == std::string::npos) fullFilename += ".png";
+    } else if (format == "BMP") {
+        if (filename.find(".bmp") == std::string::npos) fullFilename += ".bmp";
+    }
+
+    if (!cv::imwrite(fullFilename, image, params)) {
+        std::cerr << "Failed to save image\n";
+    } else {
+        std::cout << "Saved to " << fullFilename << "\n";
+    }
+}
+
 void OutputNode::renderPropertiesUI() {
-    ImGui::Text("Output");
+    ImGui::Text("Output Settings");
+
+    char filenameBuffer[256];
+    std::strncpy(filenameBuffer, filename.c_str(), sizeof(filenameBuffer));
+    filenameBuffer[sizeof(filenameBuffer) - 1] = '\0';
+
+    if (ImGui::InputText("Filename", filenameBuffer, sizeof(filenameBuffer))) {
+        filename = filenameBuffer;
+    }
+
+    const char* formats[] = { "JPG", "PNG", "BMP" };
+    static int currentFormat = 0;
+
+    if (ImGui::Combo("Format", &currentFormat, formats, IM_ARRAYSIZE(formats))) {
+        format = formats[currentFormat];
+    }
+
+    if (format == "JPG") {
+        ImGui::SliderInt("JPG Quality", &jpgQuality, 0, 100);
+    }
+
+    if (ImGui::Button("Save Image")) {
+        saveImage();
+    }
 
     if (image.empty()) {
         ImGui::Text("No image yet.");
-        return;
     } else {
         ImGui::Text("Image exists.");
     }
