@@ -54,26 +54,26 @@ int main() {
 
     Graph graph;
 
-    auto inputNode = std::make_shared<InputNode>(0);
-    int inputId = graph.addNode(inputNode);
+    // auto inputNode = std::make_shared<InputNode>(0);
+    // int inputId = graph.addNode(inputNode);
 
-    auto bcNode = std::make_shared<BrightnessContrastNode>(0);
-    int bcId = graph.addNode(bcNode);
+    // auto bcNode = std::make_shared<BrightnessContrastNode>(0);
+    // int bcId = graph.addNode(bcNode);
 
-    auto outputNode = std::make_shared<OutputNode>(0);
-    int outId = graph.addNode(outputNode);
+    // auto outputNode = std::make_shared<OutputNode>(0);
+    // int outId = graph.addNode(outputNode);
 
-    auto aNode = std::make_shared<BrightnessContrastNode>(0);
-    int aId = graph.addNode(aNode);
+    // auto aNode = std::make_shared<BrightnessContrastNode>(0);
+    // int aId = graph.addNode(aNode);
 
-    auto bNode = std::make_shared<BrightnessContrastNode>(0);
-    int bId = graph.addNode(bNode);
+    // auto bNode = std::make_shared<BrightnessContrastNode>(0);
+    // int bId = graph.addNode(bNode);
 
-    auto cNode = std::make_shared<BrightnessContrastNode>(0);
-    int cId = graph.addNode(cNode);
+    // auto cNode = std::make_shared<BrightnessContrastNode>(0);
+    // int cId = graph.addNode(cNode);
 
-    auto blurNode = std::make_shared<BlurNode>(0);
-    int blurId = graph.addNode(blurNode);
+    // auto blurNode = std::make_shared<BlurNode>(0);
+    // int blurId = graph.addNode(blurNode);
 
     // Connect input -> brightness/contrast, and brightness/contrast -> output
     // graph.addLink(inputId, 0, bcId, 0);
@@ -87,6 +87,34 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        ImGui::Begin("Add Node");
+
+        if (ImGui::Button("Input Node")) {
+            auto node = std::make_shared<InputNode>(0);
+            int id = graph.addNode(node);
+            ImNodes::SetNodeEditorSpacePos(id, ImVec2(100, 100));
+        }
+
+        if (ImGui::Button("Brightness/Contrast Node")) {
+            auto node = std::make_shared<BrightnessContrastNode>(0);
+            int id = graph.addNode(node);
+            ImNodes::SetNodeEditorSpacePos(id, ImVec2(300, 100));
+        }
+
+        if (ImGui::Button("Blur Node")) {
+            auto node = std::make_shared<BlurNode>(0);
+            int id = graph.addNode(node);
+            ImNodes::SetNodeEditorSpacePos(id, ImVec2(500, 100));
+        }
+
+        if (ImGui::Button("Output Node")) {
+            auto node = std::make_shared<OutputNode>(0);
+            int id = graph.addNode(node);
+            ImNodes::SetNodeEditorSpacePos(id, ImVec2(700, 100));
+        }
+
+        ImGui::End();
 
         graph.evaluate();
 

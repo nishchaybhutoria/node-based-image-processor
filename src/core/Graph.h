@@ -76,14 +76,6 @@ public:
         return res;
     }
 
-    // we will create evaluate() that:
-    // 1. Builds an adjacency list out of the current links and nodes
-    // 2. Runs Kahn's algorithm and returns a vector of shared_ptrs corresponding to the nodes in the topological ordering, and an empty vector if none exists
-    // 3. Finally, we go through the vector, and we know that its dependencies have been processed, so we just call process each time and get the outputs
-    // 4. We refactor our current "draw nodes" block to follow this ordering for drawing the nodes. It will also be easy to call preview in this block.
-    // 5. Obviously we have a lot of redundant calculations here, but let us ignore that for now. We can do a dp-like computation to check for caching:
-    // 6. cached[node] = 1 if cached else 0, if any node changes, cached[node] = 0, then cached[next] &= cached[node], then after processing node update cachehd[node] = 1
-
     std::unordered_map<int, std::vector<int>> buildAdjacencyList() {
         std::unordered_map<int, std::vector<int>> adjacencyList;
         
@@ -142,7 +134,7 @@ public:
         auto toposort = topologicalSort();
 
         if (toposort.empty()) {
-            std::cerr << "Graph contains a cycle\n";
+            // std::cerr << "Graph contains a cycle\n";
             return;
         }
 
