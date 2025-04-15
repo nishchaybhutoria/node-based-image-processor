@@ -3,6 +3,7 @@
 #include <iostream>
 #include "../utils/TextureUtils.h"
 #include "imgui.h"
+#include <vector>
 
 BrightnessContrastNode::BrightnessContrastNode(int id, const std::string& name) : Node(id, name) {}
 
@@ -52,8 +53,12 @@ void BrightnessContrastNode::renderPropertiesUI() {
     }
 }
 
-void BrightnessContrastNode::setInput(const cv::Mat& input) {
-    inputImage = input.clone();
+void BrightnessContrastNode::setInputs(const std::vector<cv::Mat>& input) {
+    if (!input.empty()) {
+        inputImage = input[0].clone();
+    } else {
+        inputImage.release();
+    }
 }
 
 cv::Mat BrightnessContrastNode::getOutput() const {

@@ -27,7 +27,15 @@ public:
         return node->id;
     }
 
-    int addLink(int fromNode, int fromAttr, int toNode, int toAttr) {
+    int addLink(int fromNode, int fromAttrIndex, int toNode, int toInputIndex) {
+        int fromAttr = fromNode * 1000 + fromAttrIndex;
+        int toAttr   = toNode   * 1000 + toInputIndex;
+
+        for (const auto& link : links) {
+            if (link.fromAttr == fromAttr && link.toAttr == toAttr) {
+                return link.id; // already exists
+            }
+        }
         Link link {
             nextLinkId,
             fromNode, fromAttr,
@@ -138,9 +146,21 @@ public:
             auto node = nodes[nodeId];
             auto inputs = getInputLinks(nodeId);
 
+            assert(inputs.size() <= 2);
+
+            std::vector <cv::Mat> outputs;
+            
+            if (inputs.size() == 1 || inputs.size() == 2) {
+                if (inputs.size() == 2 && (inputs[0].toAttr % 1000 > inputs[1].toAttr % 1000)) {
+                    std::swap(inputs[0], inputs[1]);
+                }
+                for (const auto& link : inputs) {
+                    outputs.push_back(nodes[link.fromNode]->getOutput());
+                }
+            }            
+
             if (!dynamic_cast<InputNode*>(node.get()) && !inputs.empty()) {
-                int fromNodeId = inputs[0].fromNode;
-                node->setInput(nodes[fromNodeId]->getOutput());
+                node->setInputs(outputs);
             }
 
             node->process();

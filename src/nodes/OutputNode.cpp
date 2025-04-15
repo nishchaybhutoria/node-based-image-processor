@@ -3,6 +3,7 @@
 #include <iostream>
 #include "../utils/TextureUtils.h"
 #include "imgui.h"
+#include <vector>
 
 OutputNode::OutputNode(int id, const std::string& name) : Node(id, name) {}
 
@@ -16,8 +17,12 @@ void OutputNode::process() {
     textureID = matToTexture(image);
 }
 
-void OutputNode::setInput(const cv::Mat& input) {
-    image = input.clone();
+void OutputNode::setInputs(const std::vector<cv::Mat>& input) {
+    if (!input.empty()) {
+        image = input[0].clone();
+    } else {
+        image.release();
+    }
 
     if (textureID) glDeleteTextures(1, &textureID); // cleanup old
     textureID = matToTexture(image);

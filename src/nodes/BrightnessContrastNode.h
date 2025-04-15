@@ -2,6 +2,7 @@
 #include <opencv2/opencv.hpp>
 #include "../core/Node.h"
 #include <GL/gl.h>
+#include <vector>
 
 class BrightnessContrastNode : public Node {
 private:
@@ -14,7 +15,7 @@ private:
 public:
     BrightnessContrastNode(int id, const std::string& name = "Brightness/Contrast");
 
-    void setInput(const cv::Mat& input) override;
+    void setInputs(const std::vector<cv::Mat>& input) override;
     void process() override;
     cv::Mat getOutput() const override;
     GLuint getTextureID() const { return textureID; }

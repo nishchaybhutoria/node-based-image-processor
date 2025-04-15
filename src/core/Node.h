@@ -1,6 +1,7 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <vector>
 
 class Node {
 public:
@@ -13,7 +14,7 @@ public:
     virtual cv::Mat getOutput() const = 0;
     virtual void preview() {}
     virtual void renderPropertiesUI() {}
-    virtual void setInput(const cv::Mat&) {}
+    virtual void setInputs(const std::vector<cv::Mat>&) {}
 
     virtual ~Node() = default;
 };
