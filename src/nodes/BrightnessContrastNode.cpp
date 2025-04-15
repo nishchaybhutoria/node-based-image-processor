@@ -9,7 +9,7 @@ BrightnessContrastNode::BrightnessContrastNode(int id, const std::string& name) 
 
 void BrightnessContrastNode::process() {
     if (inputImage.empty()) { // if there's no input
-        std::cerr << "BrightnessContrastNode: No input image.\n";
+        // std::cerr << "BrightnessContrastNode: No input image.\n";
         return;
     }
     outputImage = inputImage.clone();
@@ -46,7 +46,18 @@ void BrightnessContrastNode::renderPropertiesUI() {
     bool updated = false;
 
     updated |= ImGui::SliderFloat("Brightness", &brightness, -100.0f, 100.0f);
+    ImGui::SameLine();
+    if (ImGui::Button("Reset##Brightness")) {
+        brightness = 0.0f;
+        updated = true;
+    }
+
     updated |= ImGui::SliderFloat("Contrast", &contrast, 0.0f, 3.0f);
+    ImGui::SameLine();
+    if (ImGui::Button("Reset##Contrast")) {
+        contrast = 1.0f;
+        updated = true;
+    }
 
     if (updated) {
         process();

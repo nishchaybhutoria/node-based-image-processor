@@ -62,6 +62,16 @@ int main() {
     auto outputNode = std::make_shared<OutputNode>(0);
     int outId = graph.addNode(outputNode);
 
+    auto aNode = std::make_shared<BrightnessContrastNode>(0);
+    int aId = graph.addNode(aNode);
+
+    auto bNode = std::make_shared<BrightnessContrastNode>(0);
+    int bId = graph.addNode(bNode);
+
+    auto cNode = std::make_shared<BrightnessContrastNode>(0);
+    int cId = graph.addNode(cNode);
+
+
     // Connect input -> brightness/contrast, and brightness/contrast -> output
     // graph.addLink(inputId, 0, bcId, 0);
     // graph.addLink(bcId, 0, outId, 0);
@@ -87,6 +97,10 @@ int main() {
             ImGuiWindowFlags_NoBringToFrontOnFocus |
             ImGuiWindowFlags_NoNavFocus
         );
+
+        if (graph.hasCycle) {
+            ImGui::TextColored(ImVec4(1, 0.3f, 0.3f, 1), "Graph contains a cycle. Evaluation halted.");
+        }
 
         ImNodes::BeginNodeEditor();
 

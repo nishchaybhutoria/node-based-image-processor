@@ -19,7 +19,8 @@ private:
 public:
     std::unordered_map<int, std::shared_ptr<Node>> nodes;
     std::vector<Link> links;
-
+    bool hasCycle = false;
+    
     int addNode(std::shared_ptr<Node> node) {
         node->id = nextNodeId;
         nodes[nextNodeId] = node;
@@ -129,6 +130,9 @@ public:
 
         if (toposort.size() != adjacencyList.size()) {
             toposort.clear();
+            hasCycle = true;
+        } else {
+            hasCycle = false;
         }
 
         return toposort;

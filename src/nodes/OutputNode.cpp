@@ -9,7 +9,7 @@ OutputNode::OutputNode(int id, const std::string& name) : Node(id, name) {}
 
 void OutputNode::process() {
     if (image.empty()) {
-        std::cerr << "OutputNode: no input image\n";
+        // std::cerr << "OutputNode: no input image\n";
         return;
     }
     
@@ -98,8 +98,6 @@ void OutputNode::renderPropertiesUI() {
 
     if (image.empty()) {
         ImGui::Text("No image yet.");
-    } else {
-        ImGui::Text("Image exists.");
     }
 }
 

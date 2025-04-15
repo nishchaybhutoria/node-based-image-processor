@@ -4,12 +4,7 @@
 #include "../utils/TextureUtils.h"
 #include "imgui.h"
 
-InputNode::InputNode(int id, const std::string& defaultPath, const std::string& name)
-    : Node(id, name), filepath(defaultPath) {
-    if (!filepath.empty()) {
-        process();
-    }
-}
+InputNode::InputNode(int id, const std::string& defaultPath, const std::string& name) : Node(id, name), filepath(defaultPath) {}
 
 void InputNode::process() {
     if (filepath.empty()) return;
@@ -45,11 +40,14 @@ void InputNode::renderPropertiesUI() {
 
     static char buf[256];
     strncpy(buf, filepath.c_str(), sizeof(buf));
+    static std::string pendingPath;
 
     if (ImGui::InputText("Filepath", buf, IM_ARRAYSIZE(buf))) {
-        filepath = std::string(buf);
+        pendingPath = std::string(buf);
     }
+
     if (ImGui::Button("Load")) {
+        filepath = pendingPath;
         process();
     }
 
@@ -69,6 +67,7 @@ void InputNode::renderPropertiesUI() {
         ImGui::Text("No image loaded.");
     }
 }
+
 
 cv::Mat InputNode::getOutput() const {
     return image;
