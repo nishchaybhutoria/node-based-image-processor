@@ -4,6 +4,7 @@
 #include "nodes/InputNode.h"
 #include "nodes/OutputNode.h"
 #include "nodes/BrightnessContrastNode.h"
+#include "nodes/BlurNode.h"
 #include <memory>
 
 #include "../backends/imgui_impl_glfw.h"
@@ -71,6 +72,8 @@ int main() {
     auto cNode = std::make_shared<BrightnessContrastNode>(0);
     int cId = graph.addNode(cNode);
 
+    auto blurNode = std::make_shared<BlurNode>(0);
+    int blurId = graph.addNode(blurNode);
 
     // Connect input -> brightness/contrast, and brightness/contrast -> output
     // graph.addLink(inputId, 0, bcId, 0);
