@@ -16,6 +16,22 @@ void InputNode::process() {
     textureID = matToTexture(image);
 }
 
+void InputNode::preview() {
+    if (image.empty()) {
+        ImGui::Text("No input");
+        return;
+    }
+
+    if (textureID && glIsTexture(textureID)) {
+        ImGui::Text("Preview:");
+        ImGui::Image(
+            (ImTextureID)(intptr_t)textureID,
+            ImVec2(128, 128),
+            ImVec2(1, 0), ImVec2(0, 1)
+        );
+    }
+}
+
 void InputNode::renderPropertiesUI() {
     ImGui::Text("Input");
 

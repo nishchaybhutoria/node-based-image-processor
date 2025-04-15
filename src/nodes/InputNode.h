@@ -17,6 +17,7 @@ public:
     cv::Mat getOutput() const override;
     void renderPropertiesUI() override;
     GLuint getTextureID() const { return textureID; }
+    void preview() override;
 
     ~InputNode() override {
         if (textureID) glDeleteTextures(1, &textureID);

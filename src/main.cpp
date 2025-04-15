@@ -1,9 +1,9 @@
 #include "imgui.h"
 #include "imnodes.h"
+#include "core/Graph.h"
 #include "nodes/InputNode.h"
 #include "nodes/OutputNode.h"
 #include "nodes/BrightnessContrastNode.h"
-#include <unordered_map>
 #include <memory>
 
 #include "../backends/imgui_impl_glfw.h"
@@ -26,18 +26,17 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     bool fullscreen = true;
-
     GLFWmonitor* primary = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(primary);
 
     GLFWwindow* window = glfwCreateWindow(
         fullscreen ? mode->width : 1280, 
-        fullscreen ? mode->width : 720,
+        fullscreen ? mode->height : 720,
         "Node-Based Image Processor", 
         fullscreen ? primary : NULL, 
         NULL
     );
-    
+
     if (!window) return -1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -53,25 +52,27 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // 🔗 Shared node map
-    std::unordered_map<int, std::shared_ptr<Node>> nodes;
+    Graph graph;
 
-    // 📥 Input
-    auto inputNode = std::make_shared<InputNode>(1, "../assets/test.png");
+    auto inputNode = std::make_shared<InputNode>(0, "../assets/test.png"); // id will be overwritten anyway
+    int inputId = graph.addNode(inputNode);
     inputNode->process();
-    nodes[1] = inputNode;
 
-    // 🎚 Brightness/Contrast
-    auto bcNode = std::make_shared<BrightnessContrastNode>(2);
+    auto bcNode = std::make_shared<BrightnessContrastNode>(0); // name is optional
+    int bcId = graph.addNode(bcNode);
     bcNode->setInput(inputNode->getOutput());
     bcNode->process();
-    nodes[2] = bcNode;
 
-    // 📤 Output
-    auto outputNode = std::make_shared<OutputNode>(3);
+    auto outputNode = std::make_shared<OutputNode>(0);
+    int outId = graph.addNode(outputNode);
     outputNode->setInput(bcNode->getOutput());
     outputNode->process();
-    nodes[3] = outputNode;
+
+    // 🔗 Hardcoded links
+    graph.addLink(inputId, inputId + 100, bcId, bcId + 100);
+    graph.addLink(bcId, bcId + 200, outId, outId + 100);
+
+    int selectedNodeId = -1;
 
     // Main Loop
     while (!glfwWindowShouldClose(window)) {
@@ -81,76 +82,75 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 🔁 Update pipeline before rendering
-        bcNode->setInput(inputNode->getOutput());
-        bcNode->process();
+        graph.evaluate();
 
-        outputNode->setInput(bcNode->getOutput());
-        outputNode->process();
-
-        // 🔲 Node Editor Window
+        // 🧠 Node Editor
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGui::Begin("Node Editor", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+        ImGui::Begin("Node Editor", nullptr,
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoNavFocus
+        );
 
         ImNodes::BeginNodeEditor();
 
-        // 🧱 Input Node
-        ImNodes::BeginNode(inputNode->id);
-        ImGui::Text("%s", inputNode->name.c_str());
-        if (GLuint tex = inputNode->getTextureID(); tex && glIsTexture(tex)) {
-            ImGui::Image((ImTextureID)(intptr_t)tex, ImVec2(128, 128), ImVec2(1, 0), ImVec2(0, 1));
+        // 🧱 Draw all nodes
+        for (auto& [id, node] : graph.nodes) {
+            ImNodes::BeginNode(id);
+            ImGui::Text("%s", node->name.c_str());
+
+            node->preview();
+
+            if (dynamic_cast<InputNode*>(node.get())) {
+                ImNodes::BeginOutputAttribute(id + 100);
+                ImGui::Text("Output");
+                ImNodes::EndOutputAttribute();
+            } else if (dynamic_cast<OutputNode*>(node.get())) {
+                ImNodes::BeginInputAttribute(id + 100);
+                ImGui::Text("Input");
+                ImNodes::EndInputAttribute();
+            } else {
+                ImNodes::BeginInputAttribute(id + 100);
+                ImGui::Text("In");
+                ImNodes::EndInputAttribute();
+                ImNodes::BeginOutputAttribute(id + 200);
+                ImGui::Text("Out");
+                ImNodes::EndOutputAttribute();
+            }
+
+            ImNodes::EndNode();
         }
-        ImNodes::BeginOutputAttribute(inputNode->id + 100);
-        ImGui::Text("Image Out");
-        ImNodes::EndOutputAttribute();
-        ImNodes::EndNode();
 
-        // 🧱 Brightness/Contrast Node
-        ImNodes::BeginNode(bcNode->id);
-        ImGui::Text("%s", bcNode->name.c_str());
-        bcNode->preview();
-        ImNodes::BeginInputAttribute(bcNode->id + 100);
-        ImGui::Text("In");
-        ImNodes::EndInputAttribute();
-        ImNodes::BeginOutputAttribute(bcNode->id + 200);
-        ImGui::Text("Out");
-        ImNodes::EndOutputAttribute();
-        ImNodes::EndNode();
-
-        // 🧱 Output Node
-        ImNodes::BeginNode(outputNode->id);
-        ImGui::Text("%s", outputNode->name.c_str());
-        outputNode->preview();
-        ImNodes::BeginInputAttribute(outputNode->id + 100);
-        ImGui::Text("Final In");
-        ImNodes::EndInputAttribute();
-        ImNodes::EndNode();
-
-        // 🔗 Links
-        ImNodes::Link(1, inputNode->id + 100, bcNode->id + 100);
-        ImNodes::Link(2, bcNode->id + 200, outputNode->id + 100);
+        // 🔗 Draw links
+        for (const auto& link : graph.links) {
+            ImNodes::Link(link.id, link.fromAttr, link.toAttr);
+        }
 
         ImNodes::EndNodeEditor();
+        ImGui::End(); // Node Editor
 
-        // 🛠 Properties Panel
+        // 🛠 Properties
         ImGui::Begin("Properties");
-        int selectedNodeId = -1;
+        int tempSelected = -1;
         if (ImNodes::NumSelectedNodes() > 0) {
-            ImNodes::GetSelectedNodes(&selectedNodeId);
-            if (selectedNodeId != -1 && nodes.find(selectedNodeId) != nodes.end()) {
-                // std::cout << "Rendering UI for node " << selectedNodeId << '\n';
-                nodes[selectedNodeId]->renderPropertiesUI();
+            ImNodes::GetSelectedNodes(&tempSelected);
+            if (tempSelected != -1) {
+                selectedNodeId = tempSelected;
             }
-            ImGui::Text("Node %d is selected.", selectedNodeId);
+        }
+
+        if (selectedNodeId != -1 && graph.nodes.count(selectedNodeId)) {
+            graph.nodes[selectedNodeId]->renderPropertiesUI();
         } else {
             ImGui::Text("Select a node to view its properties.");
         }
         ImGui::End();
-        
-        ImGui::End();
 
-        // 🔁 Render Frame
+        // 🎨 Render Frame
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);

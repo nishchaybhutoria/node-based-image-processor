@@ -17,7 +17,7 @@ void OutputNode::process() {
 }
 
 void OutputNode::setInput(const cv::Mat& input) {
-    image = input;
+    image = input.clone();
 
     if (textureID) glDeleteTextures(1, &textureID); // cleanup old
     textureID = matToTexture(image);

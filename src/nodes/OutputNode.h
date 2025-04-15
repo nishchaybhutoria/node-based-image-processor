@@ -11,7 +11,7 @@ private:
 public:
     OutputNode(int id, const std::string& name = "Output");
 
-    void setInput(const cv::Mat& input);
+    void setInput(const cv::Mat& input) override;
     void process() override;
     cv::Mat getOutput() const override;
     GLuint getTextureID() const { return textureID; }

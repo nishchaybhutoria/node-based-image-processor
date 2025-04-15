@@ -13,6 +13,7 @@ public:
     virtual cv::Mat getOutput() const = 0;
     virtual void preview() {}
     virtual void renderPropertiesUI() {}
+    virtual void setInput(const cv::Mat&) {}
 
     virtual ~Node() = default;
 };
